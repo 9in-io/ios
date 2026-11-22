@@ -224,6 +224,13 @@ public final class NineClient: ObservableObject, @unchecked Sendable {
     }
 }
 
+extension NineClient: CustomReflectable {
+    /// `dump(nine)` and debuggers show the configuration and the user, never tokens.
+    public var customMirror: Mirror {
+        Mirror(self, children: ["configuration": configuration, "isSignedIn": isSignedIn, "user": user?.sub as Any], displayStyle: .class)
+    }
+}
+
 #if canImport(Observation)
 @available(iOS 17.0, macOS 14.0, macCatalyst 17.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *)
 extension NineClient: Observable {}

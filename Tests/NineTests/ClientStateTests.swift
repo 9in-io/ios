@@ -124,6 +124,19 @@ struct ClientStateTests {
         #expect(changed.current == 2)
     }
 
+    @Test("Dumping a client never shows its tokens")
+    func mirror() async throws {
+        let fake = FakeNine()
+        let nine = fake.client()
+        try await nine.signIn()
+        var dumped = ""
+        dump(nine, to: &dumped)
+        let tokens = try #require(nine.tokens)
+        let leaks = [tokens.accessToken, tokens.refreshToken!, tokens.idToken!].contains { dumped.contains($0) }
+        #expect(!leaks)
+        #expect(dumped.contains("usr_8k2"))
+    }
+
     @Test("Memory store: write, read, replace, delete")
     func memoryStore() throws {
         let store = MemoryCredentialStore()
