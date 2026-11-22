@@ -3,7 +3,23 @@ import Security
 import Testing
 @testable import Nine
 
-@Suite("Keychain credential store", .serialized)
+/// Whether this test process may use the Keychain. A Swift package's test bundle on the iOS
+/// Simulator has no app host and no entitlement (-34018); the example app's UI tests cover the
+/// Keychain on iOS (sign in, relaunch, still signed in).
+enum KeychainProbe {
+    static let available: Bool = {
+        let store = KeychainCredentialStore(service: "io.9in.nine.tests.probe.\(UUID().uuidString)")
+        do {
+            try store.write(Data([1]), for: "probe")
+            try store.delete("probe")
+            return true
+        } catch {
+            return false
+        }
+    }()
+}
+
+@Suite("Keychain credential store", .serialized, .enabled(if: KeychainProbe.available, "this process has no Keychain access (iOS Simulator test bundle without an app host)"))
 struct KeychainStoreTests {
     private func withStore(_ body: (KeychainCredentialStore) async throws -> Void) async throws {
         let store = KeychainCredentialStore(service: "io.9in.nine.tests.\(UUID().uuidString)")

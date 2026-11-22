@@ -1,0 +1,75 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  swift:
+    name: swift test (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest and newest macOS images: Xcode 16 (Swift 6.0) and the latest Xcode.
+        runner: [macos-15, macos-26]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Versions
+        run: xcodebuild -version && swift --version
+
+      - name: Build (Swift 6 language mode, warnings are errors)
+        run: swift build -Xswiftc -warnings-as-errors
+
+      - name: Build (Swift 5 language mode, complete concurrency checking)
+        run: swift build --scratch-path .build/swift5 -Xswiftc -swift-version -Xswiftc 5 -Xswiftc -strict-concurrency=complete -Xswiftc -warnings-as-errors
+
+      - name: Run tests
+        run: swift test
+
+  ios:
+    name: iOS Simulator
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Pick a simulator
+        run: |
+          xcodebuild -version
+          udid=$(xcrun simctl list devices available --json | jq -r '[.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))][0].udid')
+          echo "Using $(xcrun simctl list devices | grep "$udid")"
+          echo "DESTINATION=platform=iOS Simulator,id=$udid" >> "$GITHUB_ENV"
+
+      - name: Package tests on the simulator
+        run: xcodebuild test -scheme Nine -destination "$DESTINATION" -derivedDataPath .build/xcode-ios
+
+      - name: Example app UI tests (sign-in through ASWebAuthenticationSession)
+        working-directory: Examples/NineExample
+        run: xcodebuild test -project NineExample.xcodeproj -scheme NineExample -destination "$DESTINATION" -derivedDataPath ../../.build/xcode-example
+
+  platforms:
+    name: Mac Catalyst and visionOS builds
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Mac Catalyst
+        run: xcodebuild build -scheme Nine -destination 'generic/platform=macOS,variant=Mac Catalyst' -derivedDataPath .build/xcode-catalyst
+
+      - name: visionOS
+        run: |
+          if xcodebuild -showsdks | grep -q xrsimulator; then
+            xcodebuild build -scheme Nine -destination 'generic/platform=visionOS Simulator' -derivedDataPath .build/xcode-visionos
+          else
+            echo "::notice::The visionOS SDK is not installed on this runner image; skipped."
+          fi
