@@ -4,8 +4,8 @@ import Testing
 @testable import Nine
 
 /// Whether this test process may use the Keychain. A Swift package's test bundle on the iOS
-/// Simulator has no app host and no entitlement (-34018); the example app's UI tests cover the
-/// Keychain on iOS (sign in, relaunch, still signed in).
+/// Simulator has no app host and no entitlement (-34018). On iOS the Keychain store is tested in
+/// the example app: `NineExampleTests` (hosted by the app) and the UI tests (relaunch, still signed in).
 enum KeychainProbe {
     static let available: Bool = {
         let store = KeychainCredentialStore(service: "io.9in.nine.tests.probe.\(UUID().uuidString)")

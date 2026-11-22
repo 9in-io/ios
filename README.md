@@ -285,8 +285,9 @@ user afterwards. They are skipped unless `NINE_E2E=1` is set:
 NINE_E2E=1 NINE_E2E_ENV=/path/to/.env.e2e swift test --filter Live
 ```
 
-The example app's UI tests run a full sign-in through `ASWebAuthenticationSession` against a mock
-issuer:
+On the iOS Simulator the Keychain tests skip (a package's test bundle has no app to give it
+Keychain access); the example app runs them there instead. Its UI tests run a full sign-in
+through `ASWebAuthenticationSession` against a mock issuer:
 
 ```bash
 cd Examples/NineExample
