@@ -24,6 +24,8 @@ Requires iOS 15, macOS 12, Mac Catalyst 15 or visionOS 1 and later, and Xcode 16
 
 ```swift
 .package(url: "https://github.com/9in-io/ios", from: "0.1.0")
+// and in your target's dependencies:
+.product(name: "Nine", package: "ios")
 ```
 
 In Xcode: **File → Add Package Dependencies…**, enter `https://github.com/9in-io/ios`, and add the
