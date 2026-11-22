@@ -294,6 +294,11 @@ cd Examples/NineExample
 xcodebuild test -scheme NineExample -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
+`Examples/NineExample/live-ui-tests.sh` runs the example against a real tenant in the simulator: it
+fills in 9in's sign-in form in the system browser sheet with a new sandbox user, checks userinfo, a
+refresh, a relaunch and sign-out, then deletes the user (it reads the test tenant's settings from
+`NINE_E2E_ENV`).
+
 Report bugs in [issues](https://github.com/9in-io/ios/issues).
 
 ## License

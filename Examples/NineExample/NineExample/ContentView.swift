@@ -12,10 +12,10 @@ struct ContentView: View {
             List {
                 if let user = nine.user {
                     Section("Signed in") {
-                        row("Name", user.name ?? "—")
+                        row("Name", user.name ?? "—", id: "name")
                         row("Email", user.email ?? "—", id: "email")
-                        row("User ID", user.sub)
-                        row("Signed in with", user.amr.joined(separator: ", "))
+                        row("User ID", user.sub, id: "userId")
+                        row("Signed in with", user.amr.joined(separator: ", "), id: "amr")
                     }
                     Section {
                         Button("Call userinfo") {
@@ -64,11 +64,11 @@ struct ContentView: View {
         .disabled(busy)
     }
 
-    private func row(_ label: String, _ value: String, id: String? = nil) -> some View {
+    private func row(_ label: String, _ value: String, id: String) -> some View {
         HStack {
             Text(label).foregroundColor(.secondary)
             Spacer()
-            Text(value).multilineTextAlignment(.trailing).accessibilityIdentifier(id ?? label)
+            Text(value).multilineTextAlignment(.trailing).accessibilityIdentifier(id)
         }
     }
 
