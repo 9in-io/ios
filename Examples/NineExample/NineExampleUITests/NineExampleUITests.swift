@@ -82,7 +82,11 @@ final class NineExampleUITests: XCTestCase {
 
         app.buttons["signOut"].tap()
         allowSignInPrompt()
-        XCTAssertTrue(app.buttons["signIn"].waitForExistence(timeout: 30), "signed out")
+        // The Sign in button shows as soon as the tokens are forgotten; signOut() has returned (the
+        // browser step done) once the app's buttons are enabled again.
+        let done = NSPredicate(format: "exists == true AND enabled == true")
+        expectation(for: done, evaluatedWith: app.buttons["signIn"])
+        waitForExpectations(timeout: 30)
         XCTAssertTrue(issuer.requests.contains("GET /oauth/logout"), "the 9in session was ended in the browser")
         XCTAssertFalse(app.staticTexts["error"].exists)
     }
