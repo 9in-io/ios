@@ -103,15 +103,23 @@ final class NineExampleUITests: XCTestCase {
         app.launch()
         app.buttons["signIn"].tap()
         allowSignInPrompt()
-        let sheet = XCUIApplication(bundleIdentifier: "com.apple.SafariViewService")
-        XCTAssertTrue(sheet.webViews.firstMatch.waitForExistence(timeout: 30), "the system browser sheet shows a web page")
-        sleep(3) // let the page render for the screenshot
+        // The sheet's view tree belongs to SafariViewService or Safari, depending on the OS.
+        let browsers = ["com.apple.SafariViewService", "com.apple.mobilesafari"].map { XCUIApplication(bundleIdentifier: $0) }
+        var sheet: XCUIApplication?
+        for _ in 0..<30 where sheet == nil {
+            sheet = browsers.first { $0.buttons["URL"].exists || $0.webViews.firstMatch.exists }
+            if sheet == nil { sleep(1) }
+        }
+        let browser = try XCTUnwrap(sheet, "the system browser sheet opened")
+        _ = browser.webViews.firstMatch.staticTexts.firstMatch.waitForExistence(timeout: 30) // let the page render
+        sleep(2)
         let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         shot.name = "hosted-page"
         shot.lifetime = .keepAlways
         add(shot)
-        let text = sheet.webViews.firstMatch.staticTexts.allElementsBoundByIndex.prefix(40).map(\.label).joined(separator: " | ")
-        let page = XCTAttachment(string: text)
+        let address = browser.buttons["URL"].exists ? "\(browser.buttons["URL"].value ?? "")" : ""
+        let text = browser.webViews.firstMatch.staticTexts.allElementsBoundByIndex.prefix(40).map(\.label).joined(separator: " | ")
+        let page = XCTAttachment(string: "address: \(address)\ntext: \(text)")
         page.name = "hosted-page-text"
         page.lifetime = .keepAlways
         add(page)

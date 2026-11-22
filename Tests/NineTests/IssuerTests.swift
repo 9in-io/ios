@@ -8,7 +8,8 @@ struct IssuerTests {
         ("https://acme.9in.io", "https://acme.9in.io"),
         ("https://acme.9in.io/", "https://acme.9in.io"),
         ("https://login.acme.com/tenant", "https://login.acme.com/tenant"),
-        ("HTTPS://acme.9in.io", "HTTPS://acme.9in.io"),
+        ("HTTPS://Acme.9in.IO/", "https://acme.9in.io"),
+        ("https://Login.acme.com/Tenant", "https://login.acme.com/Tenant"),
     ])
     func https(input: String, expected: String) throws {
         #expect(try Issuer.normalize(input, allowInsecure: false) == expected)
@@ -60,6 +61,7 @@ struct IssuerTests {
             .init(issuer: "https://acme.9in.io", clientId: "app", redirectURI: "http://app.acme.com/callback"),
             .init(issuer: "https://acme.9in.io", clientId: "app", redirectURI: "com.acme.app:/callback", scopes: ["profile", "email"]),
             .init(issuer: "https://acme.9in.io", clientId: "app", redirectURI: "com.acme.app:/callback", postLogoutRedirectURI: "nope"),
+            .init(issuer: "https://acme.9in.io", clientId: "app", redirectURI: "com.acme.app:/callback", postLogoutRedirectURI: "http://app.acme.com/bye"),
         ]
         for configuration in cases {
             let nine = NineClient(configuration: configuration, store: MemoryCredentialStore())

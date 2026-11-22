@@ -293,6 +293,7 @@ actor AuthCore {
         let discovery = try await provider.configuration()
         guard let endpoint = discovery.userinfoEndpoint else { throw NineError(.userinfoFailed, "the issuer has no userinfo endpoint") }
         let token = try await validTokens(forceRefresh: false).accessToken
+        let expected = session?.claims["sub"]?.stringValue
         let json: [String: JSONValue]
         do {
             json = try await http.getJSON(endpoint, bearer: token, failure: .userinfoFailed)
@@ -300,7 +301,7 @@ actor AuthCore {
             throw NineError(.invalidToken, error.message, status: 401)
         }
         // OpenID Connect Core 5.3.4: the answer must be about the signed-in user.
-        guard let sub = json["sub"]?.stringValue, sub == session?.claims["sub"]?.stringValue else {
+        guard let sub = json["sub"]?.stringValue, sub == expected else {
             throw NineError(.invalidResponse, "the userinfo answer is about another user")
         }
         return NineUser(claims: json)
@@ -327,7 +328,8 @@ actor AuthCore {
     /// Forgets the tokens, revokes the refresh token (best effort), and ends the 9in session in
     /// the browser unless `endSession` is false or the sign-in used a private browser session.
     func signOut(endSession: Bool) async throws {
-        try? await loadIfNeeded()
+        // An unreadable store (locked Keychain) is reported: the tokens in it can't be revoked.
+        try await loadIfNeeded()
         let previous = session
         let storeError = await clear()
         if let previous {

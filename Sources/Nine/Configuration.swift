@@ -106,6 +106,7 @@ struct ResolvedConfiguration: Sendable {
             guard let url = URL(string: logout), url.scheme != nil else {
                 throw NineError(.invalidOptions, "postLogoutRedirectURI is not a URL: \(logout)")
             }
+            _ = try CallbackMatch(url)
             postLogoutRedirectURI = url
         } else {
             postLogoutRedirectURI = nil

@@ -128,7 +128,12 @@ enum Issuer {
         guard scheme == "https" || (scheme == "http" && (allowInsecure || isLocal(host))) else {
             throw NineError(.insecureIssuer, "issuer must use https (got \(scheme)://\(host)); plain http is only accepted for localhost")
         }
-        return issuer.hasSuffix("/") ? String(issuer.dropLast()) : issuer
+        // Scheme and host are case-insensitive: write them in lower case, as 9in does in `iss`.
+        var normalized = components
+        normalized.scheme = scheme
+        normalized.host = host.lowercased()
+        let value = normalized.string ?? issuer
+        return value.hasSuffix("/") ? String(value.dropLast()) : value
     }
 
     /// Whether an endpoint URL from discovery may be called: https, or http under the issuer rules.

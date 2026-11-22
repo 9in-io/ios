@@ -240,6 +240,7 @@ wrong (`insecure_issuer`, `invalid_issuer`, `invalid_options`).
 
 Every failure is a `NineError` with a `code`, a `message` and, when 9in answered with an error,
 the HTTP `status`. Messages never contain tokens. Codes 9in sends come through unchanged.
+Cancelling the `Task` that awaits a call throws Swift's `CancellationError`, as usual.
 
 | Code | When |
 |---|---|

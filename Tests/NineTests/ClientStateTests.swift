@@ -63,6 +63,8 @@ struct ClientStateTests {
         let nine = fake.client(store: store)
         #expect(!nine.isSignedIn)
         await expectNineError(.keychainError) { _ = try await nine.accessToken() }
+        await expectNineError(.keychainError) { try await nine.signOut(endSession: false) }
+        #expect(fake.requests("/oauth/revoke").isEmpty)
         store.failReads.withLock { $0 = false }
         _ = try await nine.accessToken()
         #expect(nine.isSignedIn)
